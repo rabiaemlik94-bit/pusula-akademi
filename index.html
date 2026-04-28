@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PUSULA MARAŞ AKADEMİ</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI'}
+
+body{
+  background:linear-gradient(120deg,#0B3C5D,#1e3a5f);
+  color:#fff;
+}
+
+/* LOGIN */
+#login{
+  height:100vh;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+}
+
+.btn{
+  background:rgba(255,255,255,0.1);
+  border:1px solid rgba(255,255,255,0.2);
+  padding:12px 20px;
+  margin:8px;
+  border-radius:12px;
+  cursor:pointer;
+  transition:0.3s;
+}
+.btn:hover{
+  background:#F57C00;
+  transform:scale(1.05);
+}
+
+/* APP */
+.app{display:none}
+.container{display:flex}
+
+/* SIDEBAR */
+.sidebar{
+  width:260px;
+  height:100vh;
+  background:rgba(255,255,255,0.05);
+  backdrop-filter:blur(10px);
+  padding:20px;
+}
+
+.sidebar h2{
+  margin-bottom:20px;
+}
+
+.sidebar div{
+  padding:12px;
+  border-radius:10px;
+  margin:10px 0;
+  cursor:pointer;
+  transition:0.3s;
+}
+
+.sidebar div:hover{
+  background:rgba(255,255,255,0.15);
+}
+
+/* CONTENT */
+.content{
+  flex:1;
+  padding:30px;
+}
+
+.topbar{
+  display:flex;
+  justify-content:space-between;
+  margin-bottom:20px;
+}
+
+/* CARD */
+.card{
+  background:rgba(255,255,255,0.1);
+  padding:20px;
+  border-radius:16px;
+  margin-bottom:15px;
+  transition:0.3s;
+}
+
+.card:hover{
+  transform:translateY(-5px);
+}
+
+/* GRID */
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+  gap:15px;
+}
+
+.hidden{display:none}
+
+/* INPUT */
+input{
+  padding:10px;
+  border:none;
+  border-radius:10px;
+  width:100%;
+  margin:5px 0;
+}
+
+/* BADGE */
+.badge{
+  background:#F57C00;
+  padding:4px 8px;
+  border-radius:6px;
+  font-size:12px;
+}
+</style>
+</head>
+
+<body>
+
+<!-- LOGIN -->
+<div id="login">
+<h1>🚀 PUSULA MARAŞ AKADEMİ</h1>
+<p>Dijital Akademi Platformu</p>
+
+<button class="btn" onclick="enter('student')">👨‍🎓 Öğrenci</button>
+<button class="btn" onclick="enter('parent')">👨‍👩‍👧 Veli</button>
+<button class="btn" onclick="enter('teacher')">👨‍🏫 Öğretmen</button>
+<button class="btn" onclick="enter('admin')">🧑‍💼 Yönetici</button>
+</div>
+
+<!-- APP -->
+<div id="app" class="app">
+<div class="container">
+
+<div class="sidebar">
+<h2>📌 Pusula</h2>
+<div onclick="nav('home')">🏠 Ana Panel</div>
+<div onclick="nav('exams')">📝 Sınavlar</div>
+<div onclick="nav('events')">🎯 Etkinlikler</div>
+<div onclick="nav('ai')">🤖 Yapay Zeka</div>
+<div id="adminBtn" class="hidden" onclick="nav('admin')">⚙️ Yönetici</div>
+<div onclick="logout()">🚪 Çıkış</div>
+</div>
+
+<div class="content">
+
+<div class="topbar">
+<h2>📊 Dashboard</h2>
+<span id="roleText"></span>
+</div>
+
+<!-- HOME -->
+<div id="home">
+<div class="grid">
+<div class="card">👥 Öğrenci: 120</div>
+<div class="card">📝 Sınav: <span id="statExams"></span></div>
+<div class="card">🎯 Başvuru: <span id="statApps"></span></div>
+</div>
+</div>
+
+<!-- EVENTS -->
+<div id="events" class="hidden">
+<h2>🎯 Etkinlikler</h2>
+<div id="eventList"></div>
+</div>
+
+<!-- EXAMS -->
+<div id="exams" class="hidden">
+<h2>📝 Sınavlarım</h2>
+<div id="examList"></div>
+<canvas id="chart"></canvas>
+</div>
+
+<!-- AI -->
+<div id="ai" class="hidden">
+<h2>🤖 Yapay Zeka Analiz</h2>
+<div id="aiBox" class="card"></div>
+</div>
+
+<!-- ADMIN -->
+<div id="admin" class="hidden"></div>
+
+</div>
+</div>
+</div>
+
+<script>
+
+// 🔥 DOM TANIM (ÖNEMLİ)
+const login = document.getElementById("login");
+const app = document.getElementById("app");
+const adminBtn = document.getElementById("adminBtn");
+const roleText = document.getElementById("roleText");
+
+const statExams = document.getElementById("statExams");
+const statApps = document.getElementById("statApps");
+
+const eventList = document.getElementById("eventList");
+const examList = document.getElementById("examList");
+const aiBox = document.getElementById("aiBox");
+const admin = document.getElementById("admin");
+
+let role="";
+let chart;
+
+if(!localStorage.events) localStorage.events=JSON.stringify(["Yazılım Workshop","TYT Deneme"]);
+if(!localStorage.exams) localStorage.exams=JSON.stringify([
+{name:"TYT Deneme",score:72},
+{name:"AYT Deneme",score:65}
+]);
+if(!localStorage.applications) localStorage.applications=JSON.stringify([]);
+
+function enter(r){
+role=r;
+login.style.display="none";
+app.style.display="block";
+roleText.innerText=r.toUpperCase()+" PANELİ";
+
+if(role==="admin") adminBtn.classList.remove("hidden");
+
+load();
+}
+
+function nav(id){
+document.querySelectorAll(".content > div").forEach(x=>x.classList.add("hidden"));
+document.getElementById(id).classList.remove("hidden");
+load();
+}
+
+function logout(){location.reload();}
+
+function load(){
+let events=JSON.parse(localStorage.events);
+let exams=JSON.parse(localStorage.exams);
+let applications=JSON.parse(localStorage.applications);
+
+statExams.innerText=exams.length;
+statApps.innerText=applications.length;
+
+/* EVENTS */
+eventList.innerHTML="";
+events.forEach(e=>{
+if(role==="student"){
+eventList.innerHTML+=`
+<div class="card">
+<b>${e}</b><br>
+<button class="btn" onclick="applyEvent('${e}')">Başvur</button>
+</div>`;
+}else{
+let count=applications.filter(a=>a.event===e).length;
+eventList.innerHTML+=`
+<div class="card">
+<b>${e}</b><br>${count} başvuru
+</div>`;
+}
+});
+
+/* EXAMS */
+examList.innerHTML="";
+exams.forEach(e=>{
+examList.innerHTML+=`
+<div class="card">
+<b>${e.name}</b><br>
+Net: ${e.score}<br>
+Durum: ${e.score>70?"✅ İyi":"⚠️ Geliştirilmeli"}
+</div>`;
+});
+
+/* GRAPH */
+if(chart) chart.destroy();
+chart=new Chart(document.getElementById("chart"),{
+type:"line",
+data:{
+labels:exams.map(e=>e.name),
+datasets:[{data:exams.map(e=>e.score),borderColor:"#F57C00"}]
+}
+});
+
+/* AI */
+let weak=exams.find(e=>e.score<70);
+aiBox.innerHTML=weak?📉 ${weak.name} zayıf<br>🎥 Video önerildi:"✅ Performans iyi";
+
+/* ADMIN */
+if(role==="admin"){
+admin.innerHTML=`
+<h2>⚙️ Yönetici Paneli</h2>
+
+<div class="card">
+<h3>Etkinlik Ekle</h3>
+<input id="eventName">
+<button class="btn" onclick="addEvent()">Ekle</button>
+</div>
+
+<div class="card">
+<h3>Sınav Ekle</h3>
+<input id="examName">
+<input id="examScore">
+<button class="btn" onclick="addExam()">Ekle</button>
+</div>
+
+<div class="card">
+<h3>Başvurular</h3>
+${
+applications.length===0
+? "Başvuru yok"
+: applications.map(a=><div>${a.event}</div>).join("")
+}
+</div>
+`;
+}
+}
+
+function applyEvent(event){
+let apps=JSON.parse(localStorage.applications);
+apps.push({event});
+localStorage.applications=JSON.stringify(apps);
+alert("Başvuru alındı");
+load();
+}
+
+function addEvent(){
+let val=document.getElementById("eventName").value;
+if(!val) return;
+let arr=JSON.parse(localStorage.events);
+arr.push(val);
+localStorage.events=JSON.stringify(arr);
+load();
+}
+
+function addExam(){
+let name=document.getElementById("examName").value;
+let score=parseInt(document.getElementById("examScore").value);
+if(!name || isNaN(score)) return;
+
+let arr=JSON.parse(localStorage.exams);
+arr.push({name,score});
+localStorage.exams=JSON.stringify(arr);
+load();
+}
+
+</script>
+
+</body>
+</html>
