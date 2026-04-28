@@ -8,11 +8,7 @@
 
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI'}
-
-body{
-  background:linear-gradient(120deg,#0B3C5D,#1e3a5f);
-  color:#fff;
-}
+body{background:linear-gradient(120deg,#0B3C5D,#1e3a5f);color:#fff}
 
 /* LOGIN */
 #login{
@@ -22,7 +18,6 @@ body{
   justify-content:center;
   align-items:center;
 }
-
 .btn{
   background:rgba(255,255,255,0.1);
   border:1px solid rgba(255,255,255,0.2);
@@ -30,12 +25,8 @@ body{
   margin:8px;
   border-radius:12px;
   cursor:pointer;
-  transition:0.3s;
 }
-.btn:hover{
-  background:#F57C00;
-  transform:scale(1.05);
-}
+.btn:hover{background:#F57C00}
 
 /* APP */
 .app{display:none}
@@ -43,55 +34,31 @@ body{
 
 /* SIDEBAR */
 .sidebar{
-  width:260px;
+  width:250px;
   height:100vh;
   background:rgba(255,255,255,0.05);
-  backdrop-filter:blur(10px);
   padding:20px;
 }
-
-.sidebar h2{
-  margin-bottom:20px;
-}
-
+.sidebar h2{margin-bottom:20px}
 .sidebar div{
-  padding:12px;
-  border-radius:10px;
+  padding:10px;
+  border-radius:8px;
   margin:10px 0;
   cursor:pointer;
-  transition:0.3s;
 }
-
-.sidebar div:hover{
-  background:rgba(255,255,255,0.15);
-}
+.sidebar div:hover{background:rgba(255,255,255,0.1)}
 
 /* CONTENT */
-.content{
-  flex:1;
-  padding:30px;
-}
+.content{flex:1;padding:30px}
+.topbar{display:flex;justify-content:space-between;margin-bottom:20px}
 
-.topbar{
-  display:flex;
-  justify-content:space-between;
-  margin-bottom:20px;
-}
-
-/* CARD */
 .card{
   background:rgba(255,255,255,0.1);
   padding:20px;
   border-radius:16px;
   margin-bottom:15px;
-  transition:0.3s;
 }
 
-.card:hover{
-  transform:translateY(-5px);
-}
-
-/* GRID */
 .grid{
   display:grid;
   grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
@@ -100,7 +67,6 @@ body{
 
 .hidden{display:none}
 
-/* INPUT */
 input{
   padding:10px;
   border:none;
@@ -109,7 +75,6 @@ input{
   margin:5px 0;
 }
 
-/* BADGE */
 .badge{
   background:#F57C00;
   padding:4px 8px;
@@ -189,8 +154,9 @@ input{
 </div>
 
 <script>
+document.addEventListener("DOMContentLoaded", function(){
 
-// 🔥 DOM TANIM (ÖNEMLİ)
+// 🔥 DOM TANIMLARI
 const login = document.getElementById("login");
 const app = document.getElementById("app");
 const adminBtn = document.getElementById("adminBtn");
@@ -214,7 +180,7 @@ if(!localStorage.exams) localStorage.exams=JSON.stringify([
 ]);
 if(!localStorage.applications) localStorage.applications=JSON.stringify([]);
 
-function enter(r){
+window.enter = function(r){
 role=r;
 login.style.display="none";
 app.style.display="block";
@@ -225,13 +191,13 @@ if(role==="admin") adminBtn.classList.remove("hidden");
 load();
 }
 
-function nav(id){
+window.nav = function(id){
 document.querySelectorAll(".content > div").forEach(x=>x.classList.add("hidden"));
 document.getElementById(id).classList.remove("hidden");
 load();
 }
 
-function logout(){location.reload();}
+window.logout = function(){location.reload();}
 
 function load(){
 let events=JSON.parse(localStorage.events);
@@ -241,7 +207,6 @@ let applications=JSON.parse(localStorage.applications);
 statExams.innerText=exams.length;
 statApps.innerText=applications.length;
 
-/* EVENTS */
 eventList.innerHTML="";
 events.forEach(e=>{
 if(role==="student"){
@@ -259,7 +224,6 @@ eventList.innerHTML+=`
 }
 });
 
-/* EXAMS */
 examList.innerHTML="";
 exams.forEach(e=>{
 examList.innerHTML+=`
@@ -270,7 +234,6 @@ Durum: ${e.score>70?"✅ İyi":"⚠️ Geliştirilmeli"}
 </div>`;
 });
 
-/* GRAPH */
 if(chart) chart.destroy();
 chart=new Chart(document.getElementById("chart"),{
 type:"line",
@@ -280,11 +243,9 @@ datasets:[{data:exams.map(e=>e.score),borderColor:"#F57C00"}]
 }
 });
 
-/* AI */
 let weak=exams.find(e=>e.score<70);
 aiBox.innerHTML=weak?📉 ${weak.name} zayıf<br>🎥 Video önerildi:"✅ Performans iyi";
 
-/* ADMIN */
 if(role==="admin"){
 admin.innerHTML=`
 <h2>⚙️ Yönetici Paneli</h2>
@@ -314,7 +275,7 @@ applications.length===0
 }
 }
 
-function applyEvent(event){
+window.applyEvent = function(event){
 let apps=JSON.parse(localStorage.applications);
 apps.push({event});
 localStorage.applications=JSON.stringify(apps);
@@ -322,7 +283,7 @@ alert("Başvuru alındı");
 load();
 }
 
-function addEvent(){
+window.addEvent = function(){
 let val=document.getElementById("eventName").value;
 if(!val) return;
 let arr=JSON.parse(localStorage.events);
@@ -331,7 +292,7 @@ localStorage.events=JSON.stringify(arr);
 load();
 }
 
-function addExam(){
+window.addExam = function(){
 let name=document.getElementById("examName").value;
 let score=parseInt(document.getElementById("examScore").value);
 if(!name || isNaN(score)) return;
@@ -342,6 +303,7 @@ localStorage.exams=JSON.stringify(arr);
 load();
 }
 
+});
 </script>
 
 </body>
